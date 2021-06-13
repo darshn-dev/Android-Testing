@@ -5,35 +5,33 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.constraintlayout.widget.ConstraintSet.RIGHT
 import androidx.fragment.app.viewModels
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.ItemTouchHelper
+import androidx.recyclerview.widget.ItemTouchHelper.LEFT
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.snackbar.Snackbar
+import dagger.hilt.android.AndroidEntryPoint
 import dev.darshn.androidtesting.R
+import dev.darshn.androidtesting.adapters.ShoppingItemAdapter
 import dev.darshn.androidtesting.databinding.FragmentShoppingBinding
+import kotlinx.android.synthetic.main.item_shopping.*
+import javax.inject.Inject
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ShoppingFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class ShoppingFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+@AndroidEntryPoint
+class ShoppingFragment  @Inject constructor(
+    val shoppingItemAdapter: ShoppingItemAdapter,
+    var viewModel:ShoppingViewModel?
+): Fragment() {
+
     private lateinit var binding : FragmentShoppingBinding
-   lateinit var viewModel: ShoppingViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,27 +39,65 @@ class ShoppingFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentShoppingBinding.inflate(inflater)
-        viewModel = ViewModelProvider(requireActivity()).get(ShoppingViewModel::class.java)
+        initUI()
+        subscriber()
         return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ShoppingFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ShoppingFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+    private fun initUI(){
+        viewModel = viewModel ?: ViewModelProvider(requireActivity()).get(ShoppingViewModel::class.java)
+
+        binding.rvShoppingItems.apply {
+            adapter = shoppingItemAdapter
+            layoutManager = LinearLayoutManager(requireContext())
+            ItemTouchHelper(itemTouchCallback).attachToRecyclerView(this)
+        }
+        binding.fabAddShoppingItem.setOnClickListener {
+            findNavController().navigate(R.id.action_shoppingFragment_to_addShoppingItemFragment)
+        }
     }
+
+
+    private fun subscriber(){
+        viewModel?.shoppingItems?.observe(viewLifecycleOwner, Observer {
+            shoppingItemAdapter.shoppingItems = it
+        })
+
+        viewModel?.totalPrice?.observe(viewLifecycleOwner, Observer {
+            val price = it?: 0f
+            val priceText = "Total Price $price"
+            tvShoppingItemPrice.text = priceText
+
+        })
+    }
+
+
+    private val itemTouchCallback = object : ItemTouchHelper.SimpleCallback(
+        0, LEFT or RIGHT
+    ){
+        override fun onMove(
+            recyclerView: RecyclerView,
+            viewHolder: RecyclerView.ViewHolder,
+            target: RecyclerView.ViewHolder
+        ): Boolean {
+            return true
+        }
+
+        override fun onSwiped(viewHolder: RecyclerView.ViewHolder, direction: Int) {
+            val pos = viewHolder.layoutPosition
+            val item = shoppingItemAdapter.shoppingItems[pos]
+            viewModel?.deleteShoppingItem(item)
+            Snackbar.make(requireView(),"deleted", Snackbar.LENGTH_SHORT).apply {
+                setAction("Undo"){
+                    viewModel?.insertItem(item)
+
+                }
+                show()
+            }
+        }
+    }
+
+
+
+
 }

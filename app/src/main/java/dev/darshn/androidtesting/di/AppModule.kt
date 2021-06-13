@@ -3,11 +3,14 @@ package dev.darshn.androidtesting.di
 import android.content.Context
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
+import dev.darshn.androidtesting.R
 import dev.darshn.androidtesting.data.local.ShoppingDB
 import dev.darshn.androidtesting.data.local.ShoppingDao
 import dev.darshn.androidtesting.data.remoteResponses.PixabayAPI
@@ -52,5 +55,15 @@ object AppModule {
             .build().create(PixabayAPI::class.java)
     }
 
+
+    @Singleton
+    @Provides
+    fun provideGlideInstance(
+        @ApplicationContext context: Context
+    ) = Glide.with(context).setDefaultRequestOptions(
+        RequestOptions()
+            .placeholder(R.drawable.ic_image)
+            .error(R.drawable.ic_image)
+    )
 
 }

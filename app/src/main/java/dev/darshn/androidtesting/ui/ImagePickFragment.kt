@@ -6,33 +6,23 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import androidx.recyclerview.widget.GridLayoutManager
 import dev.darshn.androidtesting.R
+import dev.darshn.androidtesting.adapters.ImageAdapter
 import dev.darshn.androidtesting.databinding.FragmentImagePickBinding
+import dev.darshn.androidtesting.util.Constants.GRID_COUNT
+import javax.inject.Inject
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [ImagePickFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class ImagePickFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+class ImagePickFragment @Inject constructor(
+     val imagAdapter : ImageAdapter
+) : Fragment() {
+
     lateinit var binding : FragmentImagePickBinding
     lateinit var viewModel: ShoppingViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,26 +31,22 @@ class ImagePickFragment : Fragment() {
         // Inflate the layout for this fragment
         binding = FragmentImagePickBinding.inflate(inflater)
         viewModel = ViewModelProvider(requireActivity()).get(ShoppingViewModel::class.java)
+        initUI()
         return binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment ImagePickFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            ImagePickFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
-                }
-            }
+
+    private fun initUI(){
+        imagAdapter.setOnClickItemListener {
+            findNavController().popBackStack()
+            viewModel.setCurImageUrl(it)
+        }
+
+
+        binding.rvImages.apply {
+            adapter = imagAdapter
+            layoutManager = GridLayoutManager(requireContext(),GRID_COUNT)
+        }
     }
+
 }

@@ -1,39 +1,40 @@
-package dev.darshn.androidtesting.ui
+package dev.d
+
+import dev.darshn.androidtesting.ui.ShoppingViewModel
+
 
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
+import com.bumptech.glide.RequestManager
+import com.google.android.material.snackbar.Snackbar
 import dev.darshn.androidtesting.R
 import dev.darshn.androidtesting.databinding.FragmentAddShoppingItemBinding
+import dev.darshn.androidtesting.util.Status
+import kotlinx.android.synthetic.main.fragment_shopping.*
+import kotlinx.android.synthetic.main.fragment_shopping.view.*
+import kotlinx.android.synthetic.main.item_image.*
+import javax.inject.Inject
 
-// TODO: Rename parameter arguments, choose names that match
-// the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-private const val ARG_PARAM1 = "param1"
-private const val ARG_PARAM2 = "param2"
 
-/**
- * A simple [Fragment] subclass.
- * Use the [AddShoppingItemFragment.newInstance] factory method to
- * create an instance of this fragment.
- */
-class AddShoppingItemFragment : Fragment() {
-    // TODO: Rename and change types of parameters
-    private var param1: String? = null
-    private var param2: String? = null
+
+class AddShoppingItemFragment @Inject constructor(
+    val glide:RequestManager
+)  : Fragment() {
+
+
 
     lateinit var binding : FragmentAddShoppingItemBinding
     lateinit var viewModel: ShoppingViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        arguments?.let {
-            param1 = it.getString(ARG_PARAM1)
-            param2 = it.getString(ARG_PARAM2)
-        }
-    }
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -41,27 +42,59 @@ class AddShoppingItemFragment : Fragment() {
     ): View? {
         // Inflate the layout for this fragment
         binding = FragmentAddShoppingItemBinding.inflate(inflater)
-        viewModel = ViewModelProvider(requireActivity()).get(ShoppingViewModel::class.java)
+       initUI()
         return  binding.root
     }
 
-    companion object {
-        /**
-         * Use this factory method to create a new instance of
-         * this fragment using the provided parameters.
-         *
-         * @param param1 Parameter 1.
-         * @param param2 Parameter 2.
-         * @return A new instance of fragment AddShoppingItemFragment.
-         */
-        // TODO: Rename and change types and number of parameters
-        @JvmStatic
-        fun newInstance(param1: String, param2: String) =
-            AddShoppingItemFragment().apply {
-                arguments = Bundle().apply {
-                    putString(ARG_PARAM1, param1)
-                    putString(ARG_PARAM2, param2)
+    private fun initUI(){
+        viewModel = ViewModelProvider(requireActivity()).get(ShoppingViewModel::class.java)
+        binding.ivShoppingImage.setOnClickListener {
+            findNavController().navigate(R.id.action_addShoppingItemFragment_to_imagePickFragment)
+        }
+
+        val callback = object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                viewModel.setCurImageUrl("")
+                findNavController().popBackStack()
+            }
+        }
+
+        requireActivity().onBackPressedDispatcher.addCallback(callback)
+
+        subscriberToObservers()
+
+
+        binding.btnAddShoppingItem.setOnClickListener {
+            viewModel.insertShoppingItme(
+                binding.etShoppingItemName.text.toString(),
+                binding.etShoppingItemAmount.text.toString(),
+                binding.etShoppingItemPrice.text.toString()
+            )
+        }
+
+    }
+
+    private fun subscriberToObservers(){
+        viewModel.curImage.observe(viewLifecycleOwner, Observer {
+            glide.load(it).into(ivShoppingImage)
+        })
+
+        viewModel.inserShoppingItem.observe(viewLifecycleOwner, Observer {
+            it.getContentIfNotHandled()?.let {
+                when(it.status){
+                    Status.SUCCESS ->{
+                       Snackbar.make(requireView().rootLayout,"Added", Snackbar.LENGTH_SHORT).show()
+                        findNavController().popBackStack()
+                    }
+                    Status.ERROR->{
+                        Snackbar.make(requireView().rootLayout,it.message?: "Error", Snackbar.LENGTH_SHORT).show()
+                    }
+                    Status.LOADING ->{
+                        /* NO-OP */
+                    }
                 }
             }
+        })
     }
+
 }

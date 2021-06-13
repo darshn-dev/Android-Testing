@@ -12,6 +12,9 @@ import dagger.hilt.android.testing.HiltAndroidRule
 import dagger.hilt.android.testing.HiltAndroidTest
 import dev.darshn.androidtesting.getOrAwaitValue
 
+import dev.darshn.androidtesting.launchFragmentInHiltContainer
+import dev.darshn.androidtesting.ui.ShoppingFragment
+
 
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
@@ -52,6 +55,13 @@ class ShoppingDaoTest {
         database.close()
     }
 
+
+    @Test
+    fun lauchFragmentInHilt(){
+        launchFragmentInHiltContainer<ShoppingFragment>{
+
+        }
+    }
 
     @Test
     fun insertShoppingItem() = runBlockingTest {
