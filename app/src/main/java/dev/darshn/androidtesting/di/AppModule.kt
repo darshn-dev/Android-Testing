@@ -9,7 +9,10 @@ import dagger.hilt.InstallIn
 import dagger.hilt.android.components.ApplicationComponent
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dev.darshn.androidtesting.data.local.ShoppingDB
+import dev.darshn.androidtesting.data.local.ShoppingDao
 import dev.darshn.androidtesting.data.remoteResponses.PixabayAPI
+import dev.darshn.androidtesting.repository.DefaultShoppingRepository
+import dev.darshn.androidtesting.repository.ShoppingRepository
 import dev.darshn.androidtesting.util.Constants
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -30,6 +33,15 @@ object AppModule {
         database: ShoppingDB
     ) = database.shoppingDao()
 
+
+    @Provides
+    @Singleton
+    fun provideDefaultRepo(
+        dao: ShoppingDao,
+        api: PixabayAPI
+    ): ShoppingRepository{
+        return DefaultShoppingRepository(dao,api) as ShoppingRepository
+    }
 
     @Singleton
     @Provides

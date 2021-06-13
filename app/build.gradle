@@ -21,7 +21,7 @@ android {
         versionCode 1
         versionName "1.0"
 
-        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "dev.darshn.androidtesting.HiltTestRunner"
         buildConfigField("String","API_KEY", API_KEY)
 
     }
@@ -45,6 +45,10 @@ android {
         exclude "META-INF/licenses/**"
         exclude "META-INF/AL2.0"
         exclude "META-INF/LGPL2.1"
+    }
+
+    buildFeatures {
+        viewBinding true
     }
 
 }
@@ -71,6 +75,7 @@ dependencies {
 
     // Room
     implementation "androidx.room:room-runtime:2.2.5"
+    implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     kapt "androidx.room:room-compiler:2.2.5"
 
     // Kotlin Extensions and Coroutines support for Room
@@ -128,6 +133,8 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
     androidTestImplementation "org.mockito:mockito-core:2.21.0"
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.28-alpha'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.28-alpha'
 
 }
 

@@ -1,7 +1,8 @@
-package dev.darshn.androidtesting
+package dev.darshn.androidtesting.ui
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import dev.darshn.androidtesting.R
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

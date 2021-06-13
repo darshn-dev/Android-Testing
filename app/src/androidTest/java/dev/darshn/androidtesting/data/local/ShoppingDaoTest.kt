@@ -7,10 +7,12 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.SmallTest
 
 import com.google.common.truth.Truth.assertThat
-
-
-
+import dagger.hilt.android.HiltAndroidApp
+import dagger.hilt.android.testing.HiltAndroidRule
+import dagger.hilt.android.testing.HiltAndroidTest
 import dev.darshn.androidtesting.getOrAwaitValue
+
+
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runBlockingTest
 import org.junit.After
@@ -18,13 +20,22 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
+import javax.inject.Inject
+import javax.inject.Named
 
 @ExperimentalCoroutinesApi
-@RunWith(AndroidJUnit4::class )
 @SmallTest
+@HiltAndroidTest
 class ShoppingDaoTest {
-    private lateinit var database:ShoppingDB
-    private lateinit var dao :ShoppingDao
+
+    @get:Rule
+    var hilt = HiltAndroidRule(this)
+
+    @Inject
+    @Named("test_db")
+    lateinit var database:ShoppingDB
+
+    lateinit var dao :ShoppingDao
 
     @get:Rule
     var instanceTaskExecutorRule= InstantTaskExecutorRule()
@@ -32,8 +43,8 @@ class ShoppingDaoTest {
 
     @Before
     fun setup(){
-        database = Room.inMemoryDatabaseBuilder(ApplicationProvider.getApplicationContext(), ShoppingDB::class.java).allowMainThreadQueries().build()
-        dao = database.shoppingDao()
+            hilt.inject()
+           dao = database.shoppingDao()
     }
 
     @After
